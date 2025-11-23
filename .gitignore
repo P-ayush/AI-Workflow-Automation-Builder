@@ -1,0 +1,94 @@
+# -------------------------
+# Python
+# -------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyd
+*.pdb
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.spec
+
+# -------------------------
+# Virtual Environment
+# -------------------------
+venv/
+.env/
+.venv/
+env/
+ENV/
+myenv/
+
+# -------------------------
+# Environment Files
+# -------------------------
+*.env
+.env.local
+.env.*.local
+
+# -------------------------
+# Project Settings / Secrets
+# -------------------------
+hf_token.txt
+huggingface/
+cache/
+logs/
+*.log
+
+# -------------------------
+# LangChain / LangGraph Cache
+# -------------------------
+.lc/
+.langchain/
+langchain.db
+
+# -------------------------
+# VSCode / Editors
+# -------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# -------------------------
+# OS Files
+# -------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# -------------------------
+# Python notebooks (optional)
+# -------------------------
+.ipynb_checkpoints/
+
+# -------------------------
+# FastAPI / Uvicorn
+# -------------------------
+*.pid
+
+# -------------------------
+# Compiled modules
+# -------------------------
+*.pyd
+*.dll
+*.dylib
+
+# -------------------------
+# Local data
+# -------------------------
+data/
+tmp/
+temp/
+
+# -------------------------
+# Logs and cache
+# -------------------------
+cache/
+logs/
+*.log
