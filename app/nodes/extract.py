@@ -1,50 +1,46 @@
-import json
-import re
-from app.llm import chat
 from langchain_core.prompts import ChatPromptTemplate
+from app.llm import chat
 from app.state import WorkflowState
-
+from app.schema.workflow_entities import WorkflowEntities
 
 def extract_entities_node(state: WorkflowState) -> WorkflowState:
     normalized = state["normalized"]
 
-    prompt = ChatPromptTemplate.from_messages([
-        (
-            "system",
-            "Extract workflow entities from the text.\n"
-            "Return ONLY valid JSON. No markdown, no explanation.\n\n"
-            "STRICT RULES:\n"
-            "- ALWAYS return keys: triggers, actions, timeouts\n"
-            "- Each trigger MUST be an object with:\n"
-            "    name: string\n"
-            "    when: string\n"
-            "    match: string ONLY\n"
-            "- Each action MUST be an object with:\n"
-            "    name: string\n"
-            "    do: string ONLY\n"
-            "- Each timeout MUST be an object with:\n"
-            "    name: string\n"
-            "    after_minutes: number\n"
-            "    action: string\n"
-            "- DO NOT return explanations.\n"
-        ),
-        ("human", "Text:\n{input}\n\nReturn ONLY JSON.")
-    ])
+    structured_chat = chat.with_structured_output(WorkflowEntities)
 
-    messages = prompt.format_messages(input=normalized)
-    raw = chat.invoke(messages).content.strip()
+    prompt = ChatPromptTemplate.from_template(
+        """
+Extract workflow entities from the text.
 
-    raw = raw.replace("```json", "").replace("```", "").strip()
+You MUST return JSON that EXACTLY follows this schema:
 
-    match = re.search(r'\{.*\}', raw, re.DOTALL)
-    if not match:
-        raise ValueError(f"LLM did not return valid JSON:\n{raw}")
+triggers: list of objects with:
+- name (string)
+- when (string)
+- match (string)
 
-    json_str = match.group(0)
+actions: list of objects with:
+- name (string)
+- do (string)
 
-    try:
-        parsed = json.loads(json_str)
-    except Exception as e:
-        raise ValueError(f"JSON parsing failed:\n{json_str}\nError: {e}")
+timeouts: list of objects with:
+- name (string)
+- after_minutes (integer)
+- action (string)
 
-    return {"extracted_entities": parsed}
+RULES:
+- NEVER omit any required field.
+- NEVER return null.
+- If something is not present, return an EMPTY LIST [].
+- ALWAYS return keys: triggers, actions, timeouts.
+
+Text:
+{input}
+"""
+    )
+
+    text_prompt = prompt.format(input=normalized)
+
+    result: WorkflowEntities = structured_chat.invoke(text_prompt)
+
+    return {"extracted_entities": result.dict()}
