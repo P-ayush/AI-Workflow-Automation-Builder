@@ -3,38 +3,33 @@ from langchain_core.prompts import ChatPromptTemplate
 from app.state import WorkflowState
 
    
-def generate_dsl_node(state: WorkflowState):
+def generate_dsl_node(state):
     entities = state["extracted_entities"]
 
-    workflow = {
-        "triggers": [],
-        "actions": [],
-        "timeouts": []
+    triggers = entities["triggers"]
+    actions = entities["actions"]
+    timeouts = entities["timeouts"]
+
+    action_names = [a["name"] for a in actions]
+
+    linked_triggers = []
+    for t in triggers:
+        linked_triggers.append({
+            **t,
+            "actions": action_names
+        })
+
+    dsl = {
+        "triggers": linked_triggers,
+        "actions": [
+            {
+                "name": a["name"],
+                "type": "custom",
+                "description": a["do"]
+            }
+            for a in actions
+        ],
+        "timeouts": timeouts
     }
 
-    for t in entities.get("triggers", []):
-        workflow["triggers"].append({
-            "name": t.get("name", "trigger_1"),
-            "when": t.get("when", ""),
-            "match": t.get("match", ""),
-            "actions": []   
-        })
-
-    for a in entities.get("actions", []):
-        workflow["actions"].append({
-            "name": a.get("name", "action_1"),
-            "type": "custom",
-            "description": a.get("do", "")
-        })
-
-    for tm in entities.get("timeouts", []):
-        workflow["timeouts"].append({
-            "name": tm.get("name", "timeout_1"),
-            "after_minutes": tm.get("after_minutes", 0),
-            "action": tm.get("action", "")
-        })
-
-    return {
-        **state,
-        "dsl": workflow
-    }
+    return {**state, "dsl": dsl}
