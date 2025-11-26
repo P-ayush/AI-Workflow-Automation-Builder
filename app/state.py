@@ -5,4 +5,5 @@ class WorkflowState(TypedDict, total=False):
     normalized: str               
     extracted_entities: Dict[str, Any] 
     dsl: Dict[str, Any]           
-    errors: Optional[str]           
+    errors: Optional[str]
+    valid: Optional[bool]          
